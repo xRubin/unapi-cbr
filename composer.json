@@ -1,0 +1,20 @@
+{
+    "name": "unapi/cbr",
+    "description": "Unapi http://www.cbr.ru/ service wrapper",
+    "keywords": ["unapi", "guzzle", "promise", "cbr", "cbr.ru"],
+    "type": "library",
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=7.1.0",
+        "guzzlehttp/guzzle": "^6.3",
+        "psr/log": "^1.0"
+    },
+    "autoload" : {
+        "psr-4": {
+            "unapi\\cbr\\": "src"
+        }
+    },
+    "config": {
+        "process-timeout": 1800
+    }
+}
