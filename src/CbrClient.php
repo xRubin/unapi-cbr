@@ -1,4 +1,5 @@
 <?php
+
 namespace unapi\cbr;
 
 use GuzzleHttp\Client;

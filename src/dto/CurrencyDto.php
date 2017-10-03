@@ -1,7 +1,10 @@
 <?php
-namespace unapi\cbr;
 
-class CbrCurrency
+namespace unapi\cbr\dto;
+
+use unapi\interfaces\DtoInterface;
+
+class CurrencyDto implements CurrencyInterface
 {
     const AUD = 'AUD'; // Австралийский доллар
     const AZN = 'AZN'; // Азербайджанский манат
@@ -54,5 +57,14 @@ class CbrCurrency
     public function getCharCode(): string
     {
         return $this->charCode;
+    }
+
+    /**
+     * @param array $data
+     * @return self
+     */
+    public static function toDto(array $data): DtoInterface
+    {
+        return new CurrencyDto($data['charCode']);
     }
 }
