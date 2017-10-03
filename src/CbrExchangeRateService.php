@@ -9,8 +9,9 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use unapi\cbr\dto\CurrencyInterface;
 use unapi\cbr\dto\ExchangeRateDto;
+use unapi\interfaces\ServiceInterface;
 
-class CbrExchangeRateService implements LoggerAwareInterface
+class CbrExchangeRateService implements ServiceInterface, LoggerAwareInterface
 {
     /** @var CbrClient */
     private $client;
