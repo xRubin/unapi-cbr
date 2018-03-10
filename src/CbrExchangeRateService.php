@@ -7,9 +7,9 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use unapi\cbr\dto\CurrencyInterface;
-use unapi\cbr\dto\ExchangeRateDto;
 use unapi\interfaces\ServiceInterface;
+use unapi\helper\money\MoneyAmount;
+use unapi\helper\money\Currency;
 
 class CbrExchangeRateService implements ServiceInterface, LoggerAwareInterface
 {
@@ -17,8 +17,6 @@ class CbrExchangeRateService implements ServiceInterface, LoggerAwareInterface
     private $client;
     /** @var LoggerInterface */
     private $logger;
-    /** @var string */
-    private $responseClass = ExchangeRateDto::class;
 
     /**
      * @param array $config Service configuration settings.
@@ -40,9 +38,6 @@ class CbrExchangeRateService implements ServiceInterface, LoggerAwareInterface
         } else {
             throw new \InvalidArgumentException('Logger must be instance of LoggerInterface');
         }
-
-        if (isset($config['responseClass']))
-            $this->responseClass = $config['responseClass'];
     }
 
     /**
@@ -54,11 +49,11 @@ class CbrExchangeRateService implements ServiceInterface, LoggerAwareInterface
     }
 
     /**
-     * @param CurrencyInterface $currency
+     * @param Currency $currency
      * @param \DateTimeInterface $dateTime
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function getExchangeRate(CurrencyInterface $currency, \DateTimeInterface $dateTime = null): PromiseInterface
+    public function getExchangeRate(Currency $currency, \DateTimeInterface $dateTime = null): PromiseInterface
     {
         if (null === $dateTime)
             $dateTime = new \DateTimeImmutable();
@@ -72,22 +67,20 @@ class CbrExchangeRateService implements ServiceInterface, LoggerAwareInterface
 
     /**
      * @param ResponseInterface $response
-     * @param CurrencyInterface $currency
+     * @param Currency $currency
      * @return PromiseInterface
      */
-    protected function processResult(ResponseInterface $response, CurrencyInterface $currency): PromiseInterface
+    protected function processResult(ResponseInterface $response, Currency $currency): PromiseInterface
     {
         $answer = $response->getBody()->getContents();
         $this->logger->debug($answer);
 
         $xml =  new \SimpleXMLElement($answer);
-        $result = $xml->xpath("//Valute/CharCode[text()='{$currency->getCharCode()}']/..")[0];
+        $result = $xml->xpath("//Valute/CharCode[text()='" . (string)$currency . "']/..")[0];
 
-        return new FulfilledPromise($this->responseClass::toDto([
-            'numCode' => (int)$result->NumCode,
-            'currency' => $currency,
-            'nominal' => (int)$result->Nominal,
-            'value' => (float)str_replace(',', '.', $result->Value),
-        ]));
+        return new FulfilledPromise(new MoneyAmount(
+            (float)str_replace(',', '.', $result->Value) / (int)$result->Nominal,
+            new Currency(Currency::RUB)
+        ));
     }
 }
